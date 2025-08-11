@@ -1,23 +1,19 @@
-CMOCKA_DIR 			:= ./cmocka
+CMOCKA_DIR 			:= cmocka
 CMOCKA_LIB_DIR 		:= $(CMOCKA_DIR)/build/src
 CMOCKA_INCLUDE_DIR 	:= $(CMOCKA_DIR)/include
 
 CC:=gcc
-CFLAGS:=-Wall -Werror -Wextra -Os -fPIE -mmacosx-version-min=15.60 
-LD:=ld
-LDFLAGS:=-r
-LPATH:=-L.
-
+CFLAGS:=-Wall -Werror -Wextra -Os -fPIE
 
 all: main
 
 test: add_test
 
-cov: lcov.info coverage
+cov: lcov.info coverage test_dependencies
 
 # Link the test binary with the CMocka library and coverage flags
-add_test: add_test.o add.test.o	
-	$(CC) -o $@ $(CFLAGS) -L$(CMOCKA_LIB_DIR) -lcmocka -Wl,-rpath,$(CMOCKA_LIB_DIR) -fprofile-arcs -ftest-coverage $^
+add_test: add_test.o add.test.o
+	$(CC) -o $@ $^ -L$(CMOCKA_LIB_DIR) -Wl,-rpath=$(CMOCKA_LIB_DIR) -lcmocka -fprofile-arcs -ftest-coverage 
 
 # Generate the lcov.info file that the VS Code Coverage Gutters can use from the *.gcda files
 lcov.info: add.test.gcda
@@ -51,14 +47,14 @@ main: main.o add.o
 	$(CC) -o $@ $(CFLAGS) add.o $<
 
 # Dependencies
-test_dependencies: $(CMOCKA_LIB_DIR)/libcmocka.dylib
+test_dependencies: $(CMOCKA_LIB_DIR)
 
-$(CMOCKA_LIB_DIR)/libcmocka.dylib:
+$(CMOCKA_LIB_DIR):
 	curl -O https://cmocka.org/files/1.1/cmocka-1.1.8.tar.xz
-	tar -xf cmocka-1.1.8.tar.xz
+	mkdir -p cmocka
+	tar -xf cmocka-1.1.8.tar.xz -C cmocka --strip-components=1
 	rm -f cmocka-1.1.8.tar.xz
-	cd cmocka-1.1.8 && mkdir build && cd build && cmake .. && make
-	mv cmocka-1.1.8 cmocka
+	cd cmocka && mkdir build && cd build && cmake .. && make
 
 clean:
 	rm -f *.o *.a *.gcda *.gcno main add_test lcov.info

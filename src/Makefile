@@ -1,4 +1,4 @@
-CMOCKA_DIR 			:= cmocka
+CMOCKA_DIR 			:= ./cmocka
 CMOCKA_LIB_DIR 		:= $(CMOCKA_DIR)/build/src
 CMOCKA_INCLUDE_DIR 	:= $(CMOCKA_DIR)/include
 
@@ -9,11 +9,11 @@ all: main
 
 test: add_test
 
-cov: lcov.info coverage test_dependencies
+cov: test_dependencies lcov.info coverage 
 
 # Link the test binary with the CMocka library and coverage flags
 add_test: add_test.o add.test.o
-	$(CC) -o $@ $^ -L$(CMOCKA_LIB_DIR) -Wl,-rpath=$(CMOCKA_LIB_DIR) -lcmocka -fprofile-arcs -ftest-coverage 
+	$(CC) -o $@ $^ -L$(CMOCKA_LIB_DIR) -Wl,-rpath,$(CMOCKA_LIB_DIR) -lcmocka -fprofile-arcs -ftest-coverage 
 
 # Generate the lcov.info file that the VS Code Coverage Gutters can use from the *.gcda files
 lcov.info: add.test.gcda

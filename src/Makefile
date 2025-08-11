@@ -3,7 +3,7 @@ CMOCKA_LIB_DIR 		:= $(CMOCKA_DIR)/build/src
 CMOCKA_INCLUDE_DIR 	:= $(CMOCKA_DIR)/include
 
 CC:=gcc
-CFLAGS:=-Wall -Werror -Wextra -Os -fPIE
+CFLAGS:=-Wall -Werror -Wextra -fPIE
 
 all: main
 
@@ -36,12 +36,11 @@ add.test.gcda: add_test
 # Create test object files with coverage flags
 %.test.o: %.c
 	# Compile the code we want code coverage on with -fprofile-arcs -ftest-coverage
-	$(CC) -o $@ -c $(CFLAGS) -fprofile-arcs -ftest-coverage $^
+	$(CC) -o $@ -c $(CFLAGS) -O0 -fprofile-arcs -ftest-coverage $^
 
 # Create object files
 %.o: %.c
-	# Compile the code we want code coverage on with -fprofile-arcs -ftest-coverage
-	$(CC) -o $@ -c $(CFLAGS) $^
+	$(CC) -o $@ -c $(CFLAGS) -Os $^
 
 main: main.o add.o
 	$(CC) -o $@ $(CFLAGS) add.o $<

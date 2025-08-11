@@ -53,3 +53,12 @@ dkms.conf
 
 # debug information files
 *.dwo
+
+src/main
+*.gcno
+*.gcda
+
+lcov.info
+
+src/cmocka
+src/coverage

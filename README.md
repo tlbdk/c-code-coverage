@@ -18,3 +18,10 @@ apt install lcov
 cd src
 make cov
 ```
+
+## VSCode
+
+[coverage-gutters](https://marketplace.visualstudio.com/items?itemName=ryanluker.vscode-coverage-gutters)
+
+![Alt text](./img/vscode-coverage.png)
+

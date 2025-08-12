@@ -9,34 +9,43 @@ all: main
 
 test: add_test
 
-cov: test_dependencies lcov.info coverage 
+lcov: test_dependencies lcov.info lcov_coverage 
+kcov: kcov_coverage
 
-# Link the test binary with the CMocka library and coverage flags
-add_test: add_test.o add.test.o
-	$(CC) -o $@ $^ -L$(CMOCKA_LIB_DIR) -Wl,-rpath,$(CMOCKA_LIB_DIR) -lcmocka -fprofile-arcs -ftest-coverage 
+# Generate html report from lcov.info file
+lcov_coverage: lcov.info
+	genhtml lcov.info --output-directory lcov_coverage
 
 # Generate the lcov.info file that the VS Code Coverage Gutters can use from the *.gcda files
 lcov.info: add.test.gcda
-	rm -f lcov.info
 	lcov --capture --directory . --output-file lcov.info
 
-# Generate html report from lcov.info file
-coverage: lcov.info
-	rm -rf coverage
-	genhtml lcov.info --output-directory coverage
-
 # Run the test binary to generate the .gcda files
-add.test.gcda: add_test
-	./add_test
+%.test.gcda: %_test_lcov
+	./$^
+
+# Link the test binary with the CMocka library and lcov/gcov coverage flags
+%_test_lcov: %_test.o %.lcov.o
+	$(CC) -o $@ $^ -L$(CMOCKA_LIB_DIR) -Wl,-rpath,$(CMOCKA_LIB_DIR) -lcmocka -fprofile-arcs -ftest-coverage
+
+# Compile the code we want code coverage on with -fprofile-arcs -ftest-coverage
+%.lcov.o: %.c
+	$(CC) -o $@ -c $(CFLAGS) -O0 -fprofile-arcs -ftest-coverage $^
+
+kcov_coverage: add_test_kcov
+	kcov --dump-summary coverage_kcov/ add_test_kcov
+
+# Add debugging symboles for kcov
+%_test_kcov: %_test.o %.kcov.o
+	$(CC) -o $@ $^ -L$(CMOCKA_LIB_DIR) -Wl,-rpath,$(CMOCKA_LIB_DIR) -lcmocka -g
+
+# Compile the code we want code coverage on with debugging symbols for kcov
+%.kcov.o: %.c
+	$(CC) -o $@ -c $(CFLAGS) -O0 -g $^
 
 # Create cmocka test object files
 %_test.o: %_test.c
 	$(CC) -o $@ -c $(CFLAGS) -I$(CMOCKA_INCLUDE_DIR) $^
-
-# Create test object files with coverage flags
-%.test.o: %.c
-	# Compile the code we want code coverage on with -fprofile-arcs -ftest-coverage
-	$(CC) -o $@ -c $(CFLAGS) -O0 -fprofile-arcs -ftest-coverage $^
 
 # Create object files
 %.o: %.c
@@ -56,7 +65,7 @@ $(CMOCKA_LIB_DIR):
 	cd cmocka && mkdir build && cd build && cmake .. && make
 
 clean:
-	rm -f *.o *.a *.gcda *.gcno main add_test lcov.info
-	rm -rf coverage
+	rm -f *.o *.a *.gcda *.gcno main add_test_lcov lcov.info add_test_kcov 
+	rm -rf coverage_lcov coverage_kcov
 
 .PHONY: clean all test_dependencies test_run

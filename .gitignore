@@ -57,8 +57,14 @@ dkms.conf
 src/main
 *.gcno
 *.gcda
+*_test
+*_test_lcov
+*_test_kcov
 
 lcov.info
 
 src/cmocka
-src/coverage
+src/coverage_kcov
+src/coverage_lcov
+
+.vscode

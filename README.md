@@ -21,7 +21,7 @@ apt install kcov # Used for kcov
 ``` bash
 cd src
 make lcov
-make kcov
+make kcov # Not working on macOS at the moment for some reason
 ```
 
 ## VSCode

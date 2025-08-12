@@ -33,9 +33,9 @@ lcov.info: add.test.gcda
 	$(CC) -o $@ -c $(CFLAGS) -O0 -fprofile-arcs -ftest-coverage $^
 
 kcov_coverage: add_test_kcov
-	kcov --dump-summary coverage_kcov/ add_test_kcov
+	kcov --dump-summary coverage_kcov/ ./add_test_kcov
 
-# Add debugging symboles for kcov
+# Add debugging symbols for kcov
 %_test_kcov: %_test.o %.kcov.o
 	$(CC) -o $@ $^ -L$(CMOCKA_LIB_DIR) -Wl,-rpath,$(CMOCKA_LIB_DIR) -lcmocka -g
 
@@ -67,5 +67,8 @@ $(CMOCKA_LIB_DIR):
 clean:
 	rm -f *.o *.a *.gcda *.gcno main add_test_lcov lcov.info add_test_kcov 
 	rm -rf coverage_lcov coverage_kcov
+
+# Don't delete intermediate .o files as we need them for debug on mac
+.PRECIOUS: %_test.o %.lcov.o %.kcov.o
 
 .PHONY: clean all test_dependencies test_run
